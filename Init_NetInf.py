@@ -2,7 +2,8 @@ import networkx as nx
 import re
 import itertools
 import math
-def Init(file,EPS) :
+
+def Init(file,EPS,MAX) :
     G,cascades_list = load_cascade_from_file(file)
     #Generates the DAG and Trees for each cascade and stores it into a dic. (DAG,Tree)
     DAG_Tree_c_dic = {}
@@ -15,15 +16,17 @@ def Init(file,EPS) :
         current_prob_DAG = DAG_c.number_of_nodes()*math.log(EPS)
         DAG_Tree_c_dic[index] = (DAG_c,Tree_c,current_prob_DAG)
 
-    all_edge = itertools.combinations(G.nodes,2) #Compute all possible edges
+    all_edge = list(itertools.product(G.nodes(),G.nodes())) #Compute all possible edges
     cascades_per_edge_dic = {}
+    edge_gain_dic = {}
     for edge in all_edge :
         cascades_per_edge_dic[edge] = []
+        edge_gain_dic[edge] = MAX
         for key in DAG_Tree_c_dic :
             if edge in DAG_Tree_c_dic[key][0].edges() :
                 cascades_per_edge_dic[edge].append(key)
                 
-    return G,DAG_Tree_c_dic,cascades_per_edge_dic
+    return G,DAG_Tree_c_dic,cascades_per_edge_dic,edge_gain_dic
 
 def load_cascade_from_file(file): #pseudo code version, needs to be updated
     f = open(file,"r")
