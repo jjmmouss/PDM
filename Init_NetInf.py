@@ -7,25 +7,27 @@ def Init(file,EPS,MAX) :
     G,cascades_list = load_cascade_from_file(file)
     #Generates the DAG and Trees for each cascade and stores it into a dic. (DAG,Tree)
     DAG_Tree_c_dic = {}
+    cascades_per_edge_dic = {}
+    edge_gain_dic = {}
+    
     for index,c in enumerate(cascades_list):
         DAG_c = Create_DAG_from_cascade(c[0])
+        for edge in DAG_c.edges():
+            try :
+                cascades_per_edge_dic[edge].append(index)
+            except KeyError:
+                cascades_per_edge_dic[edge] = [index]
+            except :
+                print("Something went wrong")
+                return
+            if edge not in edge_gain_dic :
+                edge_gain_dic[edge] = MAX
         Tree_c= nx.DiGraph()
         Tree_c.add_nodes_from(DAG_c.nodes()) #We start with an empty tree
         
         #Computes the current value of the empty graph G
         current_prob_DAG = DAG_c.number_of_nodes()*math.log(EPS)
         DAG_Tree_c_dic[index] = (DAG_c,Tree_c,current_prob_DAG)
-    print("DAG_Tree dictionary creation is over") 
-    all_edge = list(itertools.product(G.nodes(),G.nodes())) #Compute all possible edges
-    cascades_per_edge_dic = {}
-    edge_gain_dic = {}
-    for edge in all_edge :
-        cascades_per_edge_dic[edge] = [] # It will store a list of cascade's Id in which the edge is present
-        edge_gain_dic[edge] = MAX # Arbitrary value initialization (just do not put 0)
-        for key in DAG_Tree_c_dic :
-            if edge in DAG_Tree_c_dic[key][0].edges() :
-                cascades_per_edge_dic[edge].append(key) #Add the id of the cascade in which the edge is present
-                
     return G,DAG_Tree_c_dic,cascades_per_edge_dic,edge_gain_dic
 
 def load_cascade_from_file(file): #pseudo code version, needs to be updated
@@ -63,3 +65,20 @@ def Create_DAG_from_cascade(cascade):
                 DAG.add_edge(vertex1,vertex2)
     return DAG
 
+def Create_ground_truth_from_file(file):
+    f = open(file,"r")
+    G = nx.DiGraph()
+    for nodes in f:
+        if not nodes.strip(): ## Stop at the first blank line
+            print("stop")
+            break
+        node = re.split(',|\n',nodes) # the format of the input file is <id>,<name>  
+        vertex = node[0]
+        names = node[1]
+        G.add_node(int(vertex),name = names)
+    for edges in f :
+        edge = re.split(',|\n',edges)
+        vertex_i = edge[0] # initial vertex of the directed edge
+        vertex_f = edge[1] # final vertex of the edge
+        G.add_edge(int(vertex_i),int(vertex_f),number_of_cascade_edge_is_in =0)
+    return G
