@@ -71,7 +71,7 @@ Generale a set of cascades until a ratio of edge of the true network has been us
 
 Input :
     -ground_thruth : True underlying network, directed graph
-    -ratio_of_used_edges : int giving the precentage of edges we want at least to be used
+    -ratio_of_used_edges : int giving the number (0% to 100%) of edges we want to be used at least once
     -beta, alpha, window : int that describes the model. 
                             Beta is the proba of an edge transmitting the infection 
                             Alpha is the parameter of the exp law or power law
@@ -85,6 +85,7 @@ def Generate_all_cascades(ground_truth,ratio_of_used_edges,beta,alpha,window,mod
     nb_used_edges = 0
     nb_itt = 0
     dic_of_cascades = {}
+    list_of_used_edges = []
     while (nb_used_edges<ratio_of_used_edges/100*ground_truth.number_of_edges()):
         cascade = Generate_one_cascade(ground_truth,beta,alpha,window,model)
         list_of_tuples = []
@@ -94,12 +95,9 @@ def Generate_all_cascades(ground_truth,ratio_of_used_edges,beta,alpha,window,mod
             list_of_tuples.append((vertex,t_v))
         dic_of_cascades[nb_itt] = list_of_tuples
         for edge in cascade.edges():
-            ground_truth.edges[edge]["number_of_cascade_edge_is_in"]+=1
-        nb_non_zero_edge = 0
-        for edge in ground_truth.edges():
-            if ground_truth.edges[edge]["number_of_cascade_edge_is_in"]!=0 :
-                nb_non_zero_edge +=1
-        nb_used_edges = nb_non_zero_edge
+            if edge not in list_of_used_edges :
+                list_of_used_edges.append(edge)
+        nb_used_edges = len(list_of_used_edges)
         nb_itt+=1
     return dic_of_cascades
 
@@ -120,6 +118,37 @@ def Save_cascade_to_file(file_name,dic_of_cascades,ground_truth):
         c = dic_of_cascades[keys]
         for couple in c :
             v,t_v = couple
-            f.write(str(v)+","+str(t_v)+";")
+            if couple == c[-1] :
+                f.write(str(v)+","+str(t_v))
+            else :
+                f.write(str(v)+","+str(t_v)+";")
         f.write("\n")
+    f.close()
+    
+###################### Graph generation (ground truth) #######################
+
+def Generate_random_graph(nb_vertex,nb_edges):
+    list_vertex = list(range(nb_vertex))
+    max_number_edge = len(list(itertools.product(list_vertex,list_vertex)))-len(list_vertex)
+    if nb_edges>max_number_edge :
+        print("You ask for more edge than it is possible")
+        return 0
+    G = nx.DiGraph()
+    for i in range(0,nb_vertex):
+        G.add_node(i,name = str(i))
+    while len(G.edges)<nb_edges :
+        v1 = int(np.random.choice(G.nodes))
+        v2 = int(np.random.choice(G.nodes))
+        while (v1,v2) in G.edges or v1==v2:
+            v2 = int(np.random.choice(G.nodes))
+        G.add_edge(v1,v2)
+    return G
+
+def Save_graph_to_file(file_name,G) :
+    f = open(file_name,"w")
+    for nodes in G.nodes():
+        f.write(str(nodes)+","+str(nodes)+"\n")
+    f.write("\n") #end of the node so we add an empty line
+    for edge in G.edges():
+        f.write(str(edge[0])+","+str(edge[1])+"\n")
     f.close()

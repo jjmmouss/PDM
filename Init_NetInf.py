@@ -15,16 +15,16 @@ def Init(file,EPS,MAX) :
         #Computes the current value of the empty graph G
         current_prob_DAG = DAG_c.number_of_nodes()*math.log(EPS)
         DAG_Tree_c_dic[index] = (DAG_c,Tree_c,current_prob_DAG)
-
+    print("DAG_Tree dictionary creation is over") 
     all_edge = list(itertools.product(G.nodes(),G.nodes())) #Compute all possible edges
     cascades_per_edge_dic = {}
     edge_gain_dic = {}
     for edge in all_edge :
-        cascades_per_edge_dic[edge] = []
-        edge_gain_dic[edge] = MAX
+        cascades_per_edge_dic[edge] = [] # It will store a list of cascade's Id in which the edge is present
+        edge_gain_dic[edge] = MAX # Arbitrary value initialization (just do not put 0)
         for key in DAG_Tree_c_dic :
             if edge in DAG_Tree_c_dic[key][0].edges() :
-                cascades_per_edge_dic[edge].append(key)
+                cascades_per_edge_dic[edge].append(key) #Add the id of the cascade in which the edge is present
                 
     return G,DAG_Tree_c_dic,cascades_per_edge_dic,edge_gain_dic
 
