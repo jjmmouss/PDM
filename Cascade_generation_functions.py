@@ -19,11 +19,6 @@ Output :
     -cascade_graph : The graph of the cascade where each nodes store their time of infection
 '''
 def Generate_one_cascade(ground_truth,beta,alpha,window,model) :
-#     ground_truth = G_true
-#     beta = 0.5 #here beta is assumed to be constant for all edges
-#     alpha = 1.0 #Here alpha is assumed to be constant for all edges
-#     window = 100
-#     model = 0
     list_of_infected_nodes = []
     cascade_graph = nx.DiGraph()
     cascade_graph.clear()
@@ -34,7 +29,7 @@ def Generate_one_cascade(ground_truth,beta,alpha,window,model) :
         list_of_infected_nodes = []
         cascade_graph.clear()
         global_time = 0
-        Start_node = int(random.choice(ground_truth.nodes)["name"])
+        Start_node = int(np.random.choice(ground_truth.nodes))
         list_of_infected_nodes.append((Start_node,global_time))
         cascade_graph.add_node(Start_node,time = global_time) #add the infection node to the cascade graph
         while(True) :
