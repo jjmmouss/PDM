@@ -1,0 +1,11 @@
+Genral Infos
+Ground truth has 1000 vertices and 500 edges
+f fraction of edges that participated in at least 1 cascade is : 99%
+Number of cascades is : 1589
+Number of different edges is : 1117
+Accuracy of the final G_k : 97.59519038076152 r : number of edge transmission is : 3624
+Average size of a cascade is : 2.2806796727501575
+Average number of cascade an edge belongs to 3.2444046553267682
+Break even point is : 0.97
+alpha = 1.0
+beta = 0.5
