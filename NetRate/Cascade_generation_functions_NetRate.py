@@ -45,17 +45,24 @@ def Generate_one_cascade(ground_truth,window,beta,model) :
                 alpha = ground_truth.edges[(node_infected,neighbours)]["weight"][0]
                 sigmaT = 0
                 if model ==0 : #Exponential case
-                        sigmaT = np.random.exponential(alpha) #TO DO : check if alpha or 1/alpha
+                        sigmaT = np.random.exponential(1/alpha) #TO DO : check if alpha or 1/alpha
                 T1 = time_of_infection + sigmaT
+                if T1 >window :
+                    continue
                 if neighbours in cascade_graph.nodes():
                     time_of_previous_infection = cascade_graph.nodes[neighbours]["time"]
                     if T1 >= time_of_previous_infection :
                         continue
                     else :
                         parent = list(cascade_graph.predecessors(neighbours))[0]
+                        if len(list(cascade_graph.predecessors(neighbours)))>1:
+                               print("Error : More than 1 parent")
                         cascade_graph.remove_edge(parent,neighbours)
-                        cascade_graph.remove_node(neighbours)
-                cascade_graph.add_node(neighbours,time = T1)
+#                         cascade_graph.remove_node(neighbours)
+                try :
+                    cascade_graph.nodes[neighbours]["time"] = T1
+                except :
+                    cascade_graph.add_node(neighbours,time = T1)
                 cascade_graph.add_edge(node_infected,neighbours)
                 list_of_infected_nodes.append((neighbours,T1))
             list_of_infected_nodes[0] = (node_infected,window) #Place the node that we handled at the end of the queue     
@@ -82,9 +89,10 @@ def Generate_all_cascades(ground_truth,ratio_of_used_edges,window,model,beta):
     nb_itt = 0
     dic_of_cascades = {}
     list_of_used_edges = []
-    
+    dic_of_cascades_graph = {}
     while (nb_used_edges<ratio_of_used_edges/100*ground_truth.number_of_edges() or nb_itt<=-ratio_of_used_edges):
         cascade = Generate_one_cascade(ground_truth,window,beta,model)
+        dic_of_cascades_graph[nb_itt] = cascade
         list_of_tuples = []
         for node in cascade.nodes():
             vertex = node
@@ -97,7 +105,6 @@ def Generate_all_cascades(ground_truth,ratio_of_used_edges,window,model,beta):
         nb_used_edges = len(list_of_used_edges)
         nb_itt+=1
     return dic_of_cascades
-
 '''
 Once a list of cascade was generate, saves it (in the right format) to a file
 
