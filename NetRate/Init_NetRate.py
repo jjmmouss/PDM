@@ -65,9 +65,9 @@ def Load_ground_truth(file):
         vertex_i = edge[0] # initial vertex of the directed edge
         vertex_f = edge[1] # final vertex of the edge
         try :
-            alpha_if = edge[2]
+            alpha_if = edge[2][1:-1]
         except :
             print("No edge transmission parameter")
             alpha_if = 0
-        G.add_edge(int(vertex_i),int(vertex_f),weight =alpha_if)
+        G.add_edge(int(vertex_i),int(vertex_f),weight =float(alpha_if))
     return G

@@ -39,6 +39,35 @@ def Create_matrices(ground_truth,cascades_DAG_dic,window):
                     A_bad[node_infected,node] += window - t_infected #survival function in the not infected case
     return (A_pot,A_bad),num_cascade_per_nodes
 
+def Create_matrices_ADMM(ground_truth,cascades_DAG_dic,window):
+    num_cascade_per_nodes = {}
+    #A_pot and A_bad correspond to the values that are summed in repectivly Psi_2 and Psi_1 (without the multiplication by alpha) in the NetRate paper
+    A_pot = np.zeros((ground_truth.number_of_nodes(),ground_truth.number_of_nodes())) # more or less corresponds to Psi 2 in the paper
+    A_bad = np.zeros((ground_truth.number_of_nodes(),ground_truth.number_of_nodes())) # more or less corresponds to Psi 1 in the paper
+    for c in cascades_DAG_dic :
+        DAG = cascades_DAG_dic[c]
+
+        for i in DAG.nodes():
+            try:
+                num_cascade_per_nodes[i].append(c)
+            except KeyError :
+                num_cascade_per_nodes[i] = [c]
+            t_v1 = DAG.nodes[i]["time"]
+            parents = list(DAG.predecessors(i))
+            if len(parents)==0:
+                continue
+            for j in parents :
+                t_v2 = DAG.nodes[j]["time"]
+                A_pot[j,i] += t_v1-t_v2 #Since log(S(t_v2|t_v1;alpha_v1,v2)) = alpha_v1,v2 * (t_v2-t_v1)
+                if (t_v1-t_v2)<=0:
+                    print("Error delta time neg")
+        for node in ground_truth.nodes() :
+            if node not in DAG.nodes() : # Meaning this node was not infected during cascade c
+                for node_infected in DAG.nodes():
+                    t_infected = DAG.nodes[node_infected]["time"]
+                    A_bad[node_infected,node] += window - t_infected #survival function in the not infected case
+    return (A_pot,A_bad),num_cascade_per_nodes
+
 def Infer_Network_edges(ground_truth,matrix_list,nb_cascades_per_node,cascades_DAG_dic):
     A_hat = np.zeros((ground_truth.number_of_nodes(),ground_truth.number_of_nodes()))
     A_pot = matrix_list[0]
