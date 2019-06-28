@@ -156,6 +156,37 @@ def Generate_random_graph(nb_vertex,nb_edges):
         G.add_edge(v1,v2,weight = alpha_v1v2)
     return G
 
+## Generate a graph following the block model algorithm
+def Genrate_Stochastic_block_model_graph(graph_info,proba):
+    G_sbm = nx.DiGraph()
+    nb_vertex,nb_edges,nb_comunites = graph_info
+    p1,p2 = proba
+    sizes = int(nb_vertex/nb_comunites)
+    for i in range(0,nb_vertex):
+        G_sbm.add_node(i)
+    while G_sbm.number_of_edges()<nb_edges :
+        c =np.random.choice(nb_comunites,1)[0] # Choose the starting community
+        v_1 = c*sizes + np.random.choice(sizes,1)[0] #Choose the starting vertex
+        p = np.random.uniform(0,1)
+        if p <p1:
+            v_2 = c*sizes + np.random.choice(sizes,1)[0]
+            if v_1 == v_2 and v_2<(c+1)*sizes-1 :
+                v_2 +=1
+            elif v_1 == v_2 and v_2==(c+1)*sizes-1:
+                v_2-=1
+            alpha_v1v2 = np.random.uniform(0.01,1,1)        
+            G_sbm.add_edge(v_1,v_2,weight = alpha_v1v2)    
+
+        elif p1<=p<(p1+p2) :
+            c_2 = np.random.choice(nb_comunites,1)[0] #choose the ending community
+            if c_2 == c and c_2<nb_comunites-1 : #special case, last community
+                c_2 +=1
+            elif c_2==c and c_2 ==(nb_comunites-1) :
+                c_2 -=1
+            v_2 = c_2*sizes + np.random.choice(sizes,1)[0]
+            alpha_v1v2 = np.random.uniform(0.01,1,1) #generated infection parameters       
+            G_sbm.add_edge(v_1,v_2,weight = alpha_v1v2)
+    return G_sbm 
 def Save_graph_to_file(file_name,G) :
     f = open(file_name,"w")
     for nodes in G.nodes():

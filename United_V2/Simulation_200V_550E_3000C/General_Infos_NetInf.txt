@@ -1,0 +1,6 @@
+General Infos
+time needed : 1054.7885384559631 s
+Accuracy of the algo : 0.7890909090909091
+precision of the algo : 0.7890909090909091
+recall of the algo : 0.7890909090909091
+mean square error is : -15
